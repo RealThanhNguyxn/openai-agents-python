@@ -2688,8 +2688,11 @@ async def run_single_turn_streamed(
                     event_type,
                     maybe_response if isinstance(maybe_response, Response) else None,
                 )
-                if terminal_error._terminal_usage is not None:
-                    context_wrapper.usage.add(terminal_error._terminal_usage)
+                context_wrapper.usage.add(
+                    apply_retry_attempt_usage(
+                        terminal_error._terminal_usage or Usage(), stream_failed_retry_attempts[0]
+                    )
+                )
                 raise terminal_error
             elif getattr(event, "type", None) in {"error", "response.error"}:
                 raise response_error_event_failure_error(cast(str, event.type), event)
